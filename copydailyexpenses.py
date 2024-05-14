@@ -54,7 +54,7 @@ root = tk.Tk()
 root.title("Expense Tracker")
 
 # Create labels and entries for adding expenses
-date_label = tk.Label(root, text="Date (YYYY-MM-DD):")
+date_label = tk.Label(root, text="Date (DD/MM/YYYY):")
 date_label.grid(row=0, column=0, padx=5, pady=5)
 date_entry = tk.Entry(root)
 date_entry.grid(row=0, column=1, padx=5, pady=5)
