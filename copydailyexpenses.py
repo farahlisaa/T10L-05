@@ -72,6 +72,10 @@ amount_entry.grid(row=2, column=1, padx=5, pady=5)
 add_button = tk.Button(root, text="Add Expense", command=add_expense)
 add_button.grid(row=3, column=0, columnspan=2, padx=5, pady=10)
 
+categories = ['bills', 'food', 'groceries', 'shopping', 'others']
+cb1 = ttk.Combobox(root,values=categories,width=18)
+cb1.grid(row=1, column=1, padx=10, pady=10)
+
 # Create a treeview to display expenses
 columns = ("Date", "Category", "Amount")
 expenses_tree = ttk.Treeview(root, columns=columns, show="headings")
