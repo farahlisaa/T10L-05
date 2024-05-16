@@ -1,7 +1,9 @@
 import os
 import tkinter as tk
 from tkinter import ttk
+from tkcalendar import *
 
+root = Tk()
 
 def add_expense():
     date = date_entry.get()
@@ -16,6 +18,7 @@ def add_expense():
         category_entry.delete(0, tk.END)
         amount_entry.delete(0, tk.END)
         view_expenses()
+
     else:
         status_label.config(text="Please fill all the fields!", fg="red")
 
@@ -72,6 +75,11 @@ amount_entry.grid(row=2, column=1, padx=5, pady=5)
 
 add_button = tk.Button(root, text="Add Expense", command=add_expense)
 add_button.grid(row=3, column=0, columnspan=2, padx=5, pady=10)
+
+# self-add features
+categories = ['bills', 'food', 'groceries', 'shopping', 'others']
+cb1 = ttk.Combobox(root,values=categories,width=18)
+cb1.grid(row=1, column=1, padx=10, pady=10)
 
 # Create a treeview to display expenses
 columns = ("Date", "Category", "Amount")

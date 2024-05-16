@@ -1,3 +1,1 @@
-15/05/2024,food,5
-15/07/2024,,15
-16/5/2024,['bills', 'food', 'groceries', 'shopping', 'others'],15
+160524,food,15
