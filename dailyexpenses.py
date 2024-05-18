@@ -8,8 +8,9 @@ class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
         self.master.title("Daily Expense Tracker")
+        self.master.config(bg="#800080")
 
-        self.date_label = tk.Label(master, text="Date:")
+        self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
         self.date_label.pack()
 
         self.date_var = tk.StringVar(master, value=datetime.today().strftime('%d/%m/%Y'))
@@ -21,31 +22,32 @@ class DailyExpenseTracker:
 
         self.categories = ["Food", "Transportation", "Utilities", "Groceries", "Other"]
 
-        self.expense_label = tk.Label(master, text="Enter Expense (RM):")
+        self.expense_label = tk.Label(master, text="Enter Expense (RM):", bg="#800080", fg="#FFFFFF")
         self.expense_label.pack()
 
         self.expense_entry = tk.Entry(master)
         self.expense_entry.pack()
 
-        self.category_label = tk.Label(master, text="Select Category:")
+        self.category_label = tk.Label(master, text="Select Category:", bg="#800080", fg="#FFFFFF")
         self.category_label.pack()
 
         self.category_var = tk.StringVar(master)
         self.category_var.set(self.categories[0])
 
         self.category_menu = tk.OptionMenu(master, self.category_var, *self.categories)
+        self.category_menu.config(bg="#FFC0CB")
         self.category_menu.pack()
 
         self.add_expense_button = tk.Button(master, text="Add Expense", command=self.add_expense)
         self.add_expense_button.pack()
 
-        self.expense_list_label = tk.Label(master, text="Expenses:")
+        self.expense_list_label = tk.Label(master, text="Expenses:", bg="#800080", fg="#FFFFFF")
         self.expense_list_label.pack()
 
         self.expense_listbox = tk.Listbox(master, width=50)
         self.expense_listbox.pack()
 
-        self.total_label = tk.Label(master, text="Total Expenses: RM0.00")
+        self.total_label = tk.Label(master, text="Total Expenses: RM0.00", bg="#800080", fg="#FFFFFF")
         self.total_label.pack()
 
         self.total_expenses = 0.0
