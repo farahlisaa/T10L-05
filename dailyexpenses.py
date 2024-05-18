@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkcalendar import Calendar
+from tkinter import ttk
 from datetime import datetime
 
 class DailyExpenseTracker:
@@ -8,19 +9,19 @@ class DailyExpenseTracker:
         self.master = master
         self.master.title("Daily Expense Tracker")
 
-        self.date_label = tk.Label(master, text="Select Date:")
+        self.date_label = tk.Label(master, text="Date:")
         self.date_label.pack()
 
-        self.date_var = tk.StringVar(master, value=datetime.today().strftime('%Y-%m-%d'))
+        self.date_var = tk.StringVar(master, value=datetime.today().strftime('%d/%m/%Y'))
         self.date_entry = tk.Entry(master, textvariable=self.date_var)
         self.date_entry.pack()
 
-        self.date_button = tk.Button(master, text="Select Date", command=self.select_date)
+        self.date_button = tk.Button(master, text="Choose Date", command=self.select_date)
         self.date_button.pack()
 
         self.categories = ["Food", "Transportation", "Utilities", "Groceries", "Other"]
 
-        self.expense_label = tk.Label(master, text="Enter Expense:")
+        self.expense_label = tk.Label(master, text="Enter Expense (RM):")
         self.expense_label.pack()
 
         self.expense_entry = tk.Entry(master)
@@ -30,7 +31,7 @@ class DailyExpenseTracker:
         self.category_label.pack()
 
         self.category_var = tk.StringVar(master)
-        self.category_var.set(self.categories[0])  # default value
+        self.category_var.set(self.categories[0])
 
         self.category_menu = tk.OptionMenu(master, self.category_var, *self.categories)
         self.category_menu.pack()
@@ -51,7 +52,7 @@ class DailyExpenseTracker:
 
     def select_date(self):
         top = tk.Toplevel(self.master)
-        cal = Calendar(top, selectmode="day", date_pattern='yyyy-mm-dd')
+        cal = Calendar(top, selectmode="day", date_pattern='DD/MM/YYYY')
         cal.pack()
         def set_date():
             self.date_var.set(cal.get_date())
@@ -77,11 +78,10 @@ class DailyExpenseTracker:
         if selected_index:
             self.expense_listbox.delete(selected_index)
 
+
 def main():
     root = tk.Tk()
     app = DailyExpenseTracker(root)
-    delete_button = tk.Button(root, text="Delete Expense", command=app.delete_expense)
-    delete_button.pack()
     root.mainloop()
 
 if __name__ == "__main__":
