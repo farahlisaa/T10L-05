@@ -7,7 +7,7 @@ from datetime import datetime
 class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
-        self.master.title("Daily Expense Tracker")
+        self.master.title("Daily Expenses Tracker")
         self.master.config(bg="#800080")
 
         self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
