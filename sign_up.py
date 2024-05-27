@@ -1,18 +1,11 @@
 from tkinter import *
 from tkinter import messagebox
 from PIL import ImageTk
-import pymysql
 
 def login_page():
     signup_window.destroy()
     import sign_in
 
-def clear():
-    emailEntry.delete(0, END)
-    usernameEntry.delete(0, END)
-    passwordEntry.delete(0, END)
-    confirm_passwordEntry.delete(0, END)
-    
 
 def connect_database():
     if emailEntry.get() == '' or usernameEntry.get() == '' or passwordEntry.get() == '' or confirm_passwordEntry.get() == '':
@@ -20,35 +13,6 @@ def connect_database():
     elif passwordEntry.get() != confirm_passwordEntry.get():
         messagebox.showerror('Error', 'Password Does Not Match')
     else:
-        try:
-            con = pymysql.connect(host = 'localhost', user = 'root', password = '1234')
-            mycursor = con.cursor()
-        except:
-            messagebox.showerror('Error', 'Database Connectivity Issue, Please Try Again')
-            return
-        try:
-            query = 'create database userdata'
-            mycursor.execute(query)
-            query = 'use userdata'
-            mycursor.execute(query)
-            query = 'create table data(id int auto_increment primary key not null, email varchar(50), username varchar(100), password varchar(20))'
-            mycursor.execute(query)
-        except:
-            mycursor.execute('user userdata')
-
-        query = 'select * from data where username = %s'
-        mycursor.execute(query, (usernameEntry.get()))
-
-        row = mycursor.fetchone()
-        if row != None:
-            messagebox.showerror('Error', 'Username Already Exist')
-        else:
-            query = 'insert into data(email, username, passwrod) values(%s, %s, %s)'
-            mycursor.execute(query, (emailEntry.get(), usernameEntry.get(), passwordEntry.get()))
-            con.commit()
-            con.close()
-            messagebox.showinfo('Success', 'Registration Is Successful')
-            clear()
             signup_window.destroy()
             import sign_in
         
