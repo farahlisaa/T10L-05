@@ -1,0 +1,29 @@
+[Notification1]
+app_id=FinanceBook
+title=Bill reminders!!
+msg=Your bill is overdue, please make a payment asap
+duration=short
+audio=LoopingCall
+loop=False
+label=Click Me!
+launch=https://ebwise.mmu.edu.my/course/view.php?id=7193
+
+[Notification2]
+app_id=FinanceBook
+title=Bill reminders!!
+msg=Electricity bill is due tomorrow
+duration=short
+audio=LoopingCall
+loop=False
+label=Click Me!
+launch=https://www.mytnb.com.my/
+
+[Notification3]
+app_id=FinanceBook
+title=Debt payment
+msg=Housing debt is due in 3 days
+duration=short
+audio=LoopingCall
+loop=False
+label=Click Me!
+launch=https://ebwise.mmu.edu.my/course/view.php?id=7193
