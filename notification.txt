@@ -5,6 +5,7 @@ msg=Your bill is overdue, please make a payment asap
 duration=short
 audio=LoopingCall
 loop=False
+delay=2
 label=Click Me!
 launch=https://ebwise.mmu.edu.my/course/view.php?id=7193
 
@@ -15,6 +16,7 @@ msg=Electricity bill is due tomorrow
 duration=short
 audio=LoopingCall
 loop=False
+delay=10
 label=Click Me!
 launch=https://www.mytnb.com.my/
 
@@ -25,5 +27,6 @@ msg=Housing debt is due in 3 days
 duration=short
 audio=LoopingCall
 loop=False
+delay=15
 label=Click Me!
 launch=https://ebwise.mmu.edu.my/course/view.php?id=7193
