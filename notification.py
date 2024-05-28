@@ -1,4 +1,5 @@
 import time
+from datetime import datetime, timedelta
 from winotify import Notification, audio
 
 def parse_notification_file(filename):
@@ -18,7 +19,11 @@ def parse_notification_file(filename):
 
     return notifications
 
-notifications_data = parse_notification_file('notification.txt')
+def calculate_delay(target_time_str):
+    target_time = datetime.strptime(target_time_str, "%Y-%m-%d %H:%M:%S")
+    current_time = datetime.now()
+    delay = (target_time - current_time).total_seconds()
+    return max(delay, 0)
 
 def show_notification(notification_data):
     toast = Notification(
@@ -36,9 +41,14 @@ def show_notification(notification_data):
 
     toast.show()
 
+notifications_data = parse_notification_file('notification.txt') 
+
 for notification_name, notification_data in notifications_data.items():
-    delay = int(notification_data.get('delay', 0))
-    time.sleep(delay)
-    show_notification(notification_data)
+    target_time_str = notification_data.get("time")
+    if target_time_str:
+        delay = calculate_delay(target_time_str)
+        print(f"Waiting for {delay} to show notifications: {notification_name}")
+        time.sleep(delay)
+        show_notification(notification_data)
 
 print(notifications_data)
