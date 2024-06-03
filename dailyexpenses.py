@@ -1,8 +1,8 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkcalendar import Calendar
-from tkinter import ttk
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 class DailyExpenseTracker:
     def __init__(self, master):
@@ -41,6 +41,11 @@ class DailyExpenseTracker:
         self.add_expense_button = tk.Button(master, text="Add Expense", command=self.add_expense)
         self.add_expense_button.pack()
 
+        self.view_mode = "list"
+
+        self.toggle_view_button = tk.Button(master, text="View as Pie Chart", command=self.toggle_view)
+        self.toggle_view_button.pack()
+
         self.expense_list_label = tk.Label(master, text="Expenses:", bg="#800080", fg="#FFFFFF")
         self.expense_list_label.pack()
 
@@ -74,6 +79,35 @@ class DailyExpenseTracker:
 
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid expense amount.")
+
+    def toggle_view(self):
+        if self.view_mode == "list":
+            self.view_mode = "pie"
+            self.toggle_view_button.config(text="View as List")
+            self.update_pie_chart()
+        elif self.view_mode == "pie":
+            self.view_mode = "list"
+            self.toggle_view_button.config(text="View as Pie Chart")
+            plt.close()
+
+    def update_pie_chart(self):
+        expenses_by_category = {}
+        for item in self.expense_listbox.get(0, tk.END):
+            category = item.split('(')[-1].split(')')[0].strip()
+            expense = float(item.split('RM')[-1].split()[0])
+            if category in expenses_by_category:
+                expenses_by_category[category] += expense
+            else:
+                expenses_by_category[category] = expense
+
+        categories = list(expenses_by_category.keys())
+        expenses = list(expenses_by_category.values())
+
+        plt.figure(figsize=(8,6))
+        plt.pie(expenses, labels=categories, autopct='%1.1f%%')
+        plt.title('Expenses by Category')
+        plt.axis('equal')
+        plt.show()
 
     def delete_expense(self):
         selected_index = self.expense_listbox.curselection()
