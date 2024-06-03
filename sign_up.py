@@ -1,20 +1,55 @@
 from tkinter import *
 from tkinter import messagebox
-from PIL import ImageTk
+import sqlite3
 
 def login_page():
     signup_window.destroy()
     import sign_in
 
+#database
+def create_database():
+    connect = sqlite3.connect('user_data.db')
+    c = connect.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, confirm_password TEXT NOT NULL
+    )
+            ''')
 
-def connect_database():
-    if emailEntry.get() == '' or usernameEntry.get() == '' or passwordEntry.get() == '' or confirm_passwordEntry.get() == '':
-        messagebox.showerror('Error', 'All Fields Are Required')
-    elif passwordEntry.get() != confirm_passwordEntry.get():
-        messagebox.showerror('Error', 'Password Does Not Match')
-    else:
-            signup_window.destroy()
-            import sign_in
+    connect.commit()
+    connect.close()
+
+create_database()
+
+def sign_up():
+    username = usernameEntry.get()
+    email = emailEntry.get()
+    password = passwordEntry.get()
+    confirm_password = confirm_passwordEntry.get()
+
+    if password != confirm_password:
+        messagebox.showerror("Error", "Passwords do not match.")
+        return
+    
+    try:
+        connect = sqlite3.connect('user_data.db')
+        c = connect.cursor()
+
+        c.execute('INSERT INTO users (email, username, password, confirm_password) VALUES (?, ?, ?, ?)', 
+                  (email, username, password, confirm_password))
+        
+        connect.commit()
+        connect.close()
+
+        messagebox.showinfo("Success", "User signed up successfully!")
+
+        login_page()
+
+    except sqlite3.IntegrityError as e:
+        if 'UNIQUE constraint failed' in str(e):
+            messagebox.showerror("Error", "Username or email already exists. Please choose a different username or email.")
+        else:
+            messagebox.showerror("Error", "An error occurred: " + str(e))
+    
         
 
 #window setting
@@ -56,7 +91,7 @@ confirm_passwordEntry.grid(row = 14, column = 0, sticky = 'w', padx = 29)
 
 #sign up button
 signupButton = Button(frame, text = 'Sign Up', font = ('Helvetica', 20, 'bold'), bd = 0, bg = 'lightblue', fg = 'black', activebackground = 'lightblue', activeforeground = 'black',
-                      width = 19, cursor = 'hand2', command = connect_database)
+                      width = 19, cursor = 'hand2', command = sign_up)
 signupButton.grid(row = 21, column = 0, padx = 27, pady = 30)
 
 #have account label

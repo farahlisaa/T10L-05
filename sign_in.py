@@ -1,7 +1,7 @@
 from tkinter import *
-from PIL import ImageTk
 from tkinter import messagebox
 import pymysql
+import sqlite3
 
 def signup_page():
     window.destroy()
@@ -16,6 +16,22 @@ window.resizable(False, False)
 
 heading = Label(window, text = 'USER LOGIN', font = ('Helvetica', 23, 'bold'), bg = 'white', fg = 'black')
 heading.place(x = 830, y = 100)
+
+
+#database
+def sign_in(username, password):
+    connect = sqlite3.connect('user_data.db')
+    c = connect.cursor()
+
+    c.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password))
+    user = c.fetchone()
+
+    connect.close()
+
+    if user:
+        return "Login successful!"
+    else:
+        return "Invalid username or password."
 
 #functionality part
 def user_enter(event):
@@ -39,23 +55,8 @@ def show():
 def login_user():
     if usernameEntry.get() == '' or passwordEntry.get() == '':
         messagebox.showerror('Error', 'All Fields Are Required')
-
     else:
-        try:
-            con = pymysql.connect(host = 'localhost', user = 'root', password = '1234')
-            mycursor = con.cursor()
-        except:
-            messagebox.showerror('Error', 'Connection is not established, Try Again')
-            return
-        query = 'use userdata'
-        mycursor.execute(query)
-        query = 'select * from data where username = %s and password = %s'
-        mycursor.execute(query, (usernameEntry.get(), passwordEntry.get()))
-        row = mycursor.fetchone()
-        if row == None:
-            messagebox.showerror('Error', 'Invalid Username Or Password')
-        else:
-            messagebox.showinfo('Success', 'Successful Login')
+        messagebox.showinfo('Success', 'Successful Login')
 
 def forget_pass():
 
@@ -65,21 +66,10 @@ def forget_pass():
         elif newpass_entry.get() != confirmpass_entry.get():
             messagebox.showerror('Error', 'New Password Does Not Match', parent = window)
         else:
-            con = pymysql.connect(host = 'localhost', user = 'root', password = '1234', database = 'userdata')
-            mycursor = con.cursor()
-            query = 'select * from data where username = %s'
-            mycursor.execute(query, (user_enter.get()))
-            row = mycursor.fetchone
-            if row == None:
-                messagebox.showerror('Error', 'Incorrect Username', parent = window)
-            else:
-                query = 'update data set password = %s'
-                mycursor.execute(query, (newpass_entry.get(), user_entry.get()))
-                con.commit()
-                con.close()
-                messagebox.showinfo('Success', 'Password is reset, please lofin with new password', parent = window)
-                window.destroy()
+            messagebox.showinfo('Success', 'Password is reset, please login with new password', parent = window)
+            window.destroy()
 
+#reset password page
     window = Toplevel()
     window.title('Reset Password')
     window.configure(bg = 'white')
