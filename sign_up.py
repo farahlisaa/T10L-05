@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
+import re
 
 def login_page():
     signup_window.destroy()
@@ -20,6 +21,10 @@ def create_database():
 
 create_database()
 
+def is_valid_email(email):
+    pattern = r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$'
+    return re.match(pattern, email) is not None
+
 def sign_up():
     username = usernameEntry.get()
     email = emailEntry.get()
@@ -30,6 +35,10 @@ def sign_up():
         messagebox.showerror("Error", "Passwords do not match.")
         return
     
+    if not is_valid_email(email):
+        messagebox.showerror("Error", "Invalid email address.")
+        return
+
     try:
         connect = sqlite3.connect('user_data.db')
         c = connect.cursor()
