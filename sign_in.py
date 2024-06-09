@@ -63,52 +63,72 @@ def show():
 def forget_pass():
 
     def change_password():
-        if user_entry.get() == '' or newpass_entry.get() == '' or confirmpass_entry.get() == '':
-            messagebox.showerror('Error', 'All Fields Are Required', parent = window)
-        elif newpass_entry.get() != confirmpass_entry.get():
-            messagebox.showerror('Error', 'New Password Does Not Match', parent = window)
+        username = user_entry.get()
+        new_password = newpass_entry.get()
+        confirm_password = confirmpass_entry.get()
+
+        if username == '' or new_password == '' or confirm_password == '':
+            messagebox.showerror('Error', 'All Fields Are Required', parent = reset_window)
+        elif new_password != confirm_password:
+            messagebox.showerror('Error', 'New Password Does Not Match', parent = reset_window)
         else:
-            messagebox.showinfo('Success', 'Password is reset, please login with new password', parent = window)
-            window.destroy()
+            try:
+                connect = sqlite3.connect('user_data.db')
+                c = connect.cursor()
+
+                c.execute('SELECT * FROM users WHERE username=?', (username,))
+                user = c.fetchone()
+
+                if user:
+                    c.execute('UPDATE users SET password=? WHERE username=?', (new_password, username))
+                    connect.commit()
+                    messagebox.showinfo('Success', 'Password is reset, please login with new password', parent = reset_window)
+                    reset_window.destroy()
+                else:
+                    messagebox.showerror('Error', 'Username not found', parent = reset_window)
+
+                connect.close()
+            except sqlite3.Error as e:
+                messagebox.showerror('Error', f'An error occurred: {e}', parent = reset_window)
 
 #reset password page
-    window = Toplevel()
-    window.title('Reset Password')
-    window.configure(bg = 'white')
-    window.state('zoomed')
-    window.resizable(False, False)
+    reset_window = Toplevel()
+    reset_window.title('Reset Password')
+    reset_window.configure(bg = 'white')
+    reset_window.state('zoomed')
+    reset_window.resizable(False, False)
 
-    heading_label = Label(window, text = 'RESET PASSWORD', font = ('Helvetica', 23, 'bold'), bg = 'white', fg = 'black')
+    heading_label = Label(reset_window, text = 'RESET PASSWORD', font = ('Helvetica', 23, 'bold'), bg = 'white', fg = 'black')
     heading_label.place(x = 800, y = 100)
 
-    userLabel = Label(window, text = 'Username', font = ('Helvetica', 11, 'bold'), bg = 'white', fg = 'black')
+    userLabel = Label(reset_window, text = 'Username', font = ('Helvetica', 11, 'bold'), bg = 'white', fg = 'black')
     userLabel.place(x = 795, y = 160)
 
-    user_entry = Entry(window, width = 25, fg = 'black', font = ('Helvetica', 11), bd = 0)
+    user_entry = Entry(reset_window, width = 25, fg = 'black', font = ('Helvetica', 11), bd = 0)
     user_entry.place(x = 800, y = 180)
 
-    frame_1 = Frame(window, width = 250, height = 2, bg = 'black')
+    frame_1 = Frame(reset_window, width = 250, height = 2, bg = 'black')
     frame_1.place(x = 800, y = 200)    
 
-    newpassLabel = Label(window, text = 'New Password', font = ('Helvetica', 11, 'bold'), bg = 'white', fg = 'black')
+    newpassLabel = Label(reset_window, text = 'New Password', font = ('Helvetica', 11, 'bold'), bg = 'white', fg = 'black')
     newpassLabel.place(x = 795, y = 250)
 
-    newpass_entry = Entry(window, width = 25, fg = 'black', font = ('Helvetica', 11), bd = 0)
+    newpass_entry = Entry(reset_window, width = 25, fg = 'black', font = ('Helvetica', 11), bd = 0)
     newpass_entry.place(x = 800, y = 270)
 
-    frame_2 = Frame(window, width = 250, height = 2, bg = 'black')
+    frame_2 = Frame(reset_window, width = 250, height = 2, bg = 'black')
     frame_2.place(x = 800, y = 290)
 
-    confirmpassLabel = Label(window, text = 'Confirm Password', font = ('Helvetica', 11, 'bold'), bg = 'white', fg = 'black')
+    confirmpassLabel = Label(reset_window, text = 'Confirm Password', font = ('Helvetica', 11, 'bold'), bg = 'white', fg = 'black')
     confirmpassLabel.place(x = 795, y = 340)
 
-    confirmpass_entry = Entry(window, width = 25, fg = 'black', font = ('Helvetica', 11), bd = 0)
+    confirmpass_entry = Entry(reset_window, width = 25, fg = 'black', font = ('Helvetica', 11), bd = 0)
     confirmpass_entry.place(x = 800, y = 360)
 
-    frame_3 = Frame(window, width = 250, height = 2, bg = 'black')
+    frame_3 = Frame(reset_window, width = 250, height = 2, bg = 'black')
     frame_3.place(x = 800, y = 380)
 
-    submitButton = Button(window, text = 'Submit', bd = 0, bg = 'lightblue', fg = 'black', font = ('Helvetica', 20, 'bold'), width = 15, 
+    submitButton = Button(reset_window, text = 'Submit', bd = 0, bg = 'lightblue', fg = 'black', font = ('Helvetica', 20, 'bold'), width = 15, 
                           cursor = 'hand2', activebackground = 'lightblue', activeforeground = 'black', command = change_password)
     submitButton.place(x = 800, y = 430)
 

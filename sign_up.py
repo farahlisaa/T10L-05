@@ -12,7 +12,7 @@ def create_database():
     connect = sqlite3.connect('user_data.db')
     c = connect.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL, confirm_password TEXT NOT NULL
+            id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL
     )
             ''')
 
@@ -43,8 +43,8 @@ def sign_up():
         connect = sqlite3.connect('user_data.db')
         c = connect.cursor()
 
-        c.execute('INSERT INTO users (email, username, password, confirm_password) VALUES (?, ?, ?, ?)', 
-                  (email, username, password, confirm_password))
+        c.execute('INSERT INTO users (email, username, password) VALUES (?, ?, ?)', 
+                  (email, username, password))
         
         connect.commit()
         connect.close()
