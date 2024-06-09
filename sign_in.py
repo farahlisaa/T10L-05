@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import messagebox
-import pymysql
 import sqlite3
 
 def signup_page():
@@ -19,19 +18,28 @@ heading.place(x = 830, y = 100)
 
 
 #database
-def sign_in(username, password):
-    connect = sqlite3.connect('user_data.db')
-    c = connect.cursor()
+def sign_in():
+    username = usernameEntry.get()
+    password = passwordEntry.get()
 
-    c.execute('SELECT * FROM users WHERE username = ? AND password = ?', (username, password))
-    user = c.fetchone()
+    try:
+        connect = sqlite3.connect('user_data.db')
+        c = connect.cursor()
 
-    connect.close()
+        c.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
+        user = c.fetchone()
 
-    if user:
-        return "Login successful!"
-    else:
-        return "Invalid username or password."
+        if user:
+            messagebox.showinfo("Success", "Login successful!")
+        else:
+            messagebox.showerror("Error", "Invalid email or password.")
+            return
+        connect.close()
+
+    except sqlite3.Error as e:
+        messagebox.showerror("Error", f"An error occurred: {e}")
+
+    window.destroy()
 
 #functionality part
 def user_enter(event):
@@ -51,12 +59,6 @@ def show():
     openeye.config(file = 'openeye.png')
     passwordEntry.config(show = '')
     eyeButton.config(command = hide)
-
-def login_user():
-    if usernameEntry.get() == '' or passwordEntry.get() == '':
-        messagebox.showerror('Error', 'All Fields Are Required')
-    else:
-        messagebox.showinfo('Success', 'Successful Login')
 
 def forget_pass():
 
@@ -131,7 +133,7 @@ frame_2.place(x = 800, y = 230)
 
 #eye button
 openeye = PhotoImage(file = 'openeye.png')
-eyeButton = Button(window, image = openeye, bd = 0, bg = 'white', activebackground = 'white', cursor = 'hand2', comman = hide)
+eyeButton = Button(window, image = openeye, bd = 0, bg = 'white', activebackground = 'white', cursor = 'hand2', command = hide)
 eyeButton.place(x = 1020, y = 200)
 
 #forget button
@@ -141,7 +143,7 @@ forgetButton.place(x = 940, y = 250)
 
 #login button
 loginButton = Button(window, text = 'Login', font = ('Helvetica', 20, 'bold'), fg = 'black', bg = 'lightblue', cursor = 'hand2', bd = 0, 
-                     width = 15, command = login_user)
+                     width = 15, command = sign_in)
 loginButton.place(x = 800, y = 300)
 
 #or label
