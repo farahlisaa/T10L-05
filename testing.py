@@ -5,20 +5,15 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import sqlite3
 
-def sign_in():
-    daily_expenses = daily_expensesEntry.get()
-    try:
-        connect = sqlite3.connect('expenses.db')
-        c = connect.cursor()
-
-        c.execute('SELECT * FROM users WHERE daily_expenses=?', (daily_expenses))
-    user = c.fetchone()
-
 class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
         self.master.title("Daily Expenses Tracker")
         self.master.config(bg="#800080")
+
+        self.connect = sqlite3.connect('expenses.db')
+        self.c = self.connect.cursor()
+        self.create_table()
 
         self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
         self.date_label.pack()
@@ -67,6 +62,14 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
+    def create_table(self):
+        self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
+                        (id INTEGER PRIMARY KEY,
+                         date TEXT,
+                         expense REAL,
+                         category TEXT)''')
+        self.connect.commit()
+        
     def select_date(self):
         top = tk.Toplevel(self.master)
         cal = Calendar(top, selectmode="day", date_pattern='DD/MM/YYYY')
