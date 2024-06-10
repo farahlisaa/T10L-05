@@ -1,124 +1,134 @@
-import os
 import tkinter as tk
-from tkinter import ttk, Label
-from tkinter import *
-from tkcalendar import *
+from tkinter import messagebox
+from tkcalendar import Calendar
+from datetime import datetime
+import matplotlib.pyplot as plt
+import sqlite3
+
+def sign_in():
+    daily_expenses = daily_expensesEntry.get()
+    try:
+        connect = sqlite3.connect('expenses.db')
+        c = connect.cursor()
+
+        c.execute('SELECT * FROM users WHERE daily_expenses=?', (daily_expenses))
+    user = c.fetchone()
+
+class DailyExpenseTracker:
+    def __init__(self, master):
+        self.master = master
+        self.master.title("Daily Expenses Tracker")
+        self.master.config(bg="#800080")
+
+        self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
+        self.date_label.pack()
+
+        self.date_var = tk.StringVar(master, value=datetime.today().strftime('%d/%m/%Y'))
+        self.date_entry = tk.Entry(master, textvariable=self.date_var)
+        self.date_entry.pack()
+
+        self.date_button = tk.Button(master, text="Choose Date", command=self.select_date)
+        self.date_button.pack()
+
+        self.categories = ["Food", "Transportation", "Utilities", "Groceries", "Other"]
+
+        self.expense_label = tk.Label(master, text="Enter Expense (RM):", bg="#800080", fg="#FFFFFF")
+        self.expense_label.pack()
+
+        self.expense_entry = tk.Entry(master)
+        self.expense_entry.pack()
+
+        self.category_label = tk.Label(master, text="Select Category:", bg="#800080", fg="#FFFFFF")
+        self.category_label.pack()
+
+        self.category_var = tk.StringVar(master)
+        self.category_var.set(self.categories[0])
+
+        self.category_menu = tk.OptionMenu(master, self.category_var, *self.categories)
+        self.category_menu.config(bg="#FFC0CB")
+        self.category_menu.pack()
+
+        self.add_expense_button = tk.Button(master, text="Add Expense", command=self.add_expense)
+        self.add_expense_button.pack()
+
+        self.view_mode = "list"
+
+        self.toggle_view_button = tk.Button(master, text="View as Pie Chart", command=self.toggle_view)
+        self.toggle_view_button.pack()
+
+        self.expense_list_label = tk.Label(master, text="Expenses:", bg="#800080", fg="#FFFFFF")
+        self.expense_list_label.pack()
+
+        self.expense_listbox = tk.Listbox(master, width=50)
+        self.expense_listbox.pack()
+
+        self.total_label = tk.Label(master, text="Total Expenses: RM0.00", bg="#800080", fg="#FFFFFF")
+        self.total_label.pack()
+
+        self.total_expenses = 0.0
+
+    def select_date(self):
+        top = tk.Toplevel(self.master)
+        cal = Calendar(top, selectmode="day", date_pattern='DD/MM/YYYY')
+        cal.pack()
+        def set_date():
+            self.date_var.set(cal.get_date())
+            top.destroy()
+        select_button = tk.Button(top, text="Select", command=set_date)
+        select_button.pack()
+
+    def add_expense(self):
+        try:
+            expense = float(self.expense_entry.get())
+            self.total_expenses += expense
+            self.total_label.config(text="Total Expenses: RM {:.2f}".format(self.total_expenses))
+            self.expense_entry.delete(0, tk.END)
+            expense_date = self.date_var.get()
+            expense_category = self.category_var.get()
+            self.expense_listbox.insert(tk.END, f"{expense_date}: RM{expense} ({expense_category})")
+
+        except ValueError:
+            messagebox.showerror("Error", "Please enter a valid expense amount.")
+
+    def toggle_view(self):
+        if self.view_mode == "list":
+            self.view_mode = "pie"
+            self.toggle_view_button.config(text="View as List")
+            self.update_pie_chart()
+        elif self.view_mode == "pie":
+            self.view_mode = "list"
+            self.toggle_view_button.config(text="View as Pie Chart")
+            plt.close()
+
+    def update_pie_chart(self):
+        expenses_by_category = {}
+        for item in self.expense_listbox.get(0, tk.END):
+            category = item.split('(')[-1].split(')')[0].strip()
+            expense = float(item.split('RM')[-1].split()[0])
+            if category in expenses_by_category:
+                expenses_by_category[category] += expense
+            else:
+                expenses_by_category[category] = expense
+
+        categories = list(expenses_by_category.keys())
+        expenses = list(expenses_by_category.values())
+
+        plt.figure(figsize=(5,4))
+        plt.pie(expenses, labels=categories, autopct='%1.1f%%')
+        plt.title('Expenses by Category')
+        plt.axis('equal')
+        plt.show()
+
+    def delete_expense(self):
+        selected_index = self.expense_listbox.curselection()
+        if selected_index:
+            self.expense_listbox.delete(selected_index)
 
 
-def pick_options(event):
-    category_label = ['bills', 'food', 'groceries', 'shopping', 'others']
-    cb1 = ttk.Combobox(root, values=category_label, width=18)
-    cb1.grid(row=1, column=1, padx=10, pady=10)
-    date_window = Toplevel()
-    date_window.grab_set()
-def grab_options():
-    category_entry.bind("<1>", category_label)
+def main():
+    root = tk.Tk()
+    app = DailyExpenseTracker(root)
+    root.mainloop()
 
-def add_expense():
-    date = date_entry.get()
-    category = category_label
-    amount = amount_entry.get()
-
-    if date and category and amount:
-        with open("expenses.txt", "a") as file:
-            file.write(f"{date},{category},{amount}\n")
-        status_label.config(text="Expense added successfully!", fg="green")
-        date_entry.delete(0, tk.END)
-        category_entry.delete(0, tk.END)
-        amount_entry.delete(0, tk.END)
-        view_expenses()
-
-    else:
-        status_label.config(text="Please fill all the fields!", fg="red")
-
-def delete_expense():
-    selected_item = expenses_tree.selection()
-    if selected_item:
-        item_text = expenses_tree.item(selected_item, "values")
-        date, category, amount = item_text
-        with open("expenses.txt", "r") as file:
-            lines = file.readlines()
-        with open("expenses.txt", "w") as file:
-            for line in lines:
-                if line.strip() != f"{date},{category},{amount}":
-                    file.write(line)
-        status_label.config(text="Expense deleted successfully!", fg="green")
-        view_expenses()
-    else:
-        status_label.config(text="Please select an expense to delete!", fg="red")
-
-def view_expenses():
-    global expenses_tree
-    if os.path.exists("expenses.txt"):
-        total_expense = 0
-        expenses_tree.delete(*expenses_tree.get_children())
-        with open("expenses.txt", "r") as file:
-            for line in file:
-                date, category, amount = line.strip().split(",")
-                expenses_tree.insert("", tk.END, values=(date, category, amount))
-                total_expense += float(amount)
-        total_label.config(text=f"Total Expense: {total_expense:.2f}")
-    else:
-        total_label.config(text="No expenses recorded.")
-        expenses_tree.delete(*expenses_tree.get_children())
-
-# Create the main application window
-root = tk.Tk()
-root.title("Expense Tracker")
-
-# Create labels and entries for adding expenses
-date_label = tk.Label(root, text="Date (DD/MM/YYYY):")
-date_label.grid(row=0, column=0, padx=5, pady=5)
-date_entry = tk.Entry(root)
-date_entry.grid(row=0, column=1, padx=5, pady=5)
-
-category_label: Label = tk.Label(root, text="Category:")
-category_label.grid(row=1, column=0, padx=5, pady=5)
-category_entry = tk.Entry(root)
-category_entry.grid(row=1, column=1, padx=5, pady=5)
-
-amount_label = tk.Label(root, text="Amount:")
-amount_label.grid(row=2, column=0, padx=5, pady=5)
-amount_entry = tk.Entry(root)
-amount_entry.grid(row=2, column=1, padx=5, pady=5)
-
-add_button = tk.Button(root, text="Add Expense", command=add_expense)
-add_button.grid(row=3, column=0, columnspan=2, padx=5, pady=10)
-
-# self-add features
-categories = ['bills', 'food', 'groceries', 'shopping', 'others']
-cb1 = ttk.Combobox(root,values=categories,width=18)
-cb1.grid(row=1, column=1, padx=10, pady=10)
-
-# Create a treeview to display expenses
-columns = ("Date", "Category", "Amount")
-expenses_tree = ttk.Treeview(root, columns=columns, show="headings")
-expenses_tree.heading("Date", text="Date")
-expenses_tree.heading("Category", text="Category")
-expenses_tree.heading("Amount", text="Amount")
-expenses_tree.grid(row=4, column=0, columnspan=3, padx=5, pady=5)
-
-# Create a label to display the total expense
-total_label = tk.Label(root, text="")
-total_label.grid(row=5, column=0, columnspan=2, padx=5, pady=5)
-
-# Create a label to show the status of expense addition and deletion
-status_label = tk.Label(root, text="", fg="green")
-status_label.grid(row=6, column=0, columnspan=2, padx=5, pady=5)
-
-# Create buttons to view and delete expenses
-view_button = tk.Button(root, text="View Expenses", command=view_expenses)
-view_button.grid(row=7, column=0, padx=5, pady=10)
-
-delete_button = tk.Button(root, text="Delete Expense", command=delete_expense)
-delete_button.grid(row=7, column=1, padx=5, pady=10)
-
-# Check if the 'expenses.txt' file exists; create it if it doesn't
-if not os.path.exists("expenses.txt"):
-    with open("expenses.txt", "w"):
-        pass
-
-# Display existing expenses on application start
-view_expenses()
-
-root.mainloop()
+if __name__ == "__main__":
+    main()
