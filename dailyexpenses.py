@@ -8,10 +8,12 @@ import sqlite3
 def sign_in():
     username = usernameEntry.get()
     password = passwordEntry.get()
+    daily_expenses = daily_expensesEntry.get()
     try:
-        connect = sqlite3.connect('user_data.db')
+        connect = sqlite3.connect('expenses.db')
         c = connect.cursor()
-    c.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
+
+    c.execute('SELECT * FROM users WHERE username=? AND password=? AND daily_expenses=?', (username, password, daily_expenses))
     user = c.fetchone()
 
 class DailyExpenseTracker:
