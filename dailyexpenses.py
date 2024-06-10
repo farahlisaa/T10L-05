@@ -3,6 +3,16 @@ from tkinter import messagebox
 from tkcalendar import Calendar
 from datetime import datetime
 import matplotlib.pyplot as plt
+import sqlite3
+
+def sign_in():
+    username = usernameEntry.get()
+    password = passwordEntry.get()
+    try:
+        connect = sqlite3.connect('user_data.db')
+        c = connect.cursor()
+    c.execute('SELECT * FROM users WHERE username=? AND password=?', (username, password))
+    user = c.fetchone()
 
 class DailyExpenseTracker:
     def __init__(self, master):
@@ -103,7 +113,7 @@ class DailyExpenseTracker:
         categories = list(expenses_by_category.keys())
         expenses = list(expenses_by_category.values())
 
-        plt.figure(figsize=(8,6))
+        plt.figure(figsize=(5,4))
         plt.pie(expenses, labels=categories, autopct='%1.1f%%')
         plt.title('Expenses by Category')
         plt.axis('equal')
