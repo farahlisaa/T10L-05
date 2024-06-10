@@ -5,6 +5,16 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import sqlite3
 
+conn = sqlite3.connect('expenses.db')
+cursor = conn.cursor()
+
+cursor.execute('SELECT * FROM expenses')
+
+rows = cursor.fetchall()
+for row in rows:
+    print(row)
+
+conn.close()
 class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
@@ -69,7 +79,7 @@ class DailyExpenseTracker:
                          expense REAL,
                          category TEXT)''')
         self.connect.commit()
-        
+
     def select_date(self):
         top = tk.Toplevel(self.master)
         cal = Calendar(top, selectmode="day", date_pattern='DD/MM/YYYY')
