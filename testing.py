@@ -5,16 +5,6 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import sqlite3
 
-conn = sqlite3.connect('expenses.db')
-cursor = conn.cursor()
-
-cursor.execute('SELECT * FROM expenses')
-
-rows = cursor.fetchall()
-for row in rows:
-    print(row)
-
-conn.close()
 class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
