@@ -65,6 +65,7 @@ class DailyExpenseTracker:
     def create_table(self):
         self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
                         (id INTEGER PRIMARY KEY,
+                         userid REAL,
                          date TEXT,
                          expense REAL,
                          category TEXT)''')
