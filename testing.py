@@ -81,6 +81,11 @@ class DailyExpenseTracker:
         select_button = tk.Button(top, text="Select", command=set_date)
         select_button.pack()
 
+    def insert_expense(self, expense_date, expense, expense_category):
+        self.c.execute("INSERT INTO expenses (date, expense, category) VALUES (?, ?, ?)",
+                       (expense_date, expense, expense_category))
+        self.connect.commit()
+
     def add_expense(self):
         try:
             expense = float(self.expense_entry.get())
@@ -90,7 +95,7 @@ class DailyExpenseTracker:
             expense_date = self.date_var.get()
             expense_category = self.category_var.get()
             self.expense_listbox.insert(tk.END, f"{expense_date}: RM{expense} ({expense_category})")
-
+            self.insert_expense(expense_date, expense, expense_category)
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid expense amount.")
 
