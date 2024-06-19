@@ -3,12 +3,17 @@ from tkinter import messagebox
 from tkcalendar import Calendar
 from datetime import datetime
 import matplotlib.pyplot as plt
+import sqlite3
 
 class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
         self.master.title("Daily Expenses Tracker")
         self.master.config(bg="#800080")
+
+        self.connect = sqlite3.connect('expenses.db')
+        self.c = self.connect.cursor()
+        self.create_table()
 
         self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
         self.date_label.pack()
@@ -57,6 +62,15 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
+    def create_table(self):
+        self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
+                        (id INTEGER PRIMARY KEY,
+                         userid REAL,
+                         date TEXT,
+                         expense REAL,
+                         category TEXT)''')
+        self.connect.commit()
+
     def select_date(self):
         top = tk.Toplevel(self.master)
         cal = Calendar(top, selectmode="day", date_pattern='DD/MM/YYYY')
@@ -67,6 +81,11 @@ class DailyExpenseTracker:
         select_button = tk.Button(top, text="Select", command=set_date)
         select_button.pack()
 
+    def insert_expense(self, expense_date, expense, expense_category):
+        self.c.execute("INSERT INTO expenses (date, expense, category) VALUES (?, ?, ?)",
+                       (expense_date, expense, expense_category))
+        self.connect.commit()
+
     def add_expense(self):
         try:
             expense = float(self.expense_entry.get())
@@ -76,7 +95,7 @@ class DailyExpenseTracker:
             expense_date = self.date_var.get()
             expense_category = self.category_var.get()
             self.expense_listbox.insert(tk.END, f"{expense_date}: RM{expense} ({expense_category})")
-
+            self.insert_expense(expense_date, expense, expense_category)
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid expense amount.")
 
