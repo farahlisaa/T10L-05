@@ -13,7 +13,7 @@ class DailyExpenseTracker:
 
         self.connect = sqlite3.connect('expenses.db')
         self.c = self.connect.cursor()
-        self.create_table()
+        self.update_table_schema()
 
         self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
         self.date_label.pack()
@@ -62,13 +62,21 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
-    def create_table(self):
-        self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
-                        (id INTEGER PRIMARY KEY,
-                         userid REAL,
-                         date TEXT,
-                         expense REAL,
-                         category TEXT)''')
+    def update_table_schema(self):
+        self.c.execute('''CREATE TABLE IF NOT EXISTS new_expenses
+                          (expensesid INTEGER PRIMARY KEY,
+                          userid REAL,
+                          date TEXT,
+                          expense REAL,
+                          category TEXT)''')
+
+        self.c.execute('''INSERT INTO new_expenses (expensesid, date, expense, category)
+                          SELECT id, date, expense, category FROM expenses''')
+
+        self.c.execute('DROP TABLE IF EXISTS expenses')
+
+        self.c.execute('ALTER TABLE new_expenses RENAME TO expenses')
+
         self.connect.commit()
 
     def select_date(self):
@@ -82,8 +90,9 @@ class DailyExpenseTracker:
         select_button.pack()
 
     def insert_expense(self, expense_date, expense, expense_category):
-        self.c.execute("INSERT INTO expenses (date, expense, category) VALUES (?, ?, ?)",
-                       (expense_date, expense, expense_category))
+        userid = 1
+        self.c.execute("INSERT INTO expenses (userid, date, expense, category) VALUES (?, ?, ?, ?)",
+                       (userid, expense_date, expense, expense_category))
         self.connect.commit()
 
     def add_expense(self):
