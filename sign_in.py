@@ -19,6 +19,11 @@ frame.grid(padx = 20, pady = 20)
 heading = Label(frame, text = 'USER LOGIN', font = ('Helvetica', 23, 'bold'), bg = 'white', fg = 'black')
 heading.grid(row = 0, column = 0, padx = 50, pady = 10)
 
+#logo
+logo = PhotoImage(file = 'logo.png')
+app_logo = Label(window, image = logo, bd = 3, bg =  'white')
+app_logo.place(x = 500, y = 25)
+
 #database
 def sign_in():
     username = usernameEntry.get()
