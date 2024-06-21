@@ -1,9 +1,10 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkcalendar import Calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import sqlite3
+
 
 class DailyExpenseTracker:
     def __init__(self, master):
@@ -62,6 +63,15 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
+        self.delete_expense_button = tk.Button(master, text="Delete Expense", command=self.delete_expense)
+        self.delete_expense_button.pack()
+
+        self.view_weekly_button = tk.Button(master, text="View Weekly Expenses", command=self.view_weekly_expenses)
+        self.view_weekly_button.pack()
+
+        self.view_monthly_button = tk.Button(master, text="View Monthly Expenses", command=self.view_monthly_expenses)
+        self.view_monthly_button.pack()
+
     def update_table_schema(self):
         self.c.execute('''CREATE TABLE IF NOT EXISTS new_expenses
                           (expensesid INTEGER PRIMARY KEY,
@@ -83,9 +93,11 @@ class DailyExpenseTracker:
         top = tk.Toplevel(self.master)
         cal = Calendar(top, selectmode="day", date_pattern='DD/MM/YYYY')
         cal.pack()
+
         def set_date():
             self.date_var.set(cal.get_date())
             top.destroy()
+
         select_button = tk.Button(top, text="Select", command=set_date)
         select_button.pack()
 
@@ -131,7 +143,7 @@ class DailyExpenseTracker:
         categories = list(expenses_by_category.keys())
         expenses = list(expenses_by_category.values())
 
-        plt.figure(figsize=(5,4))
+        plt.figure(figsize=(5, 4))
         plt.pie(expenses, labels=categories, autopct='%1.1f%%')
         plt.title('Expenses by Category')
         plt.axis('equal')
@@ -140,29 +152,16 @@ class DailyExpenseTracker:
     def delete_expense(self):
         selected_index = self.expense_listbox.curselection()
         if selected_index:
+            selected_item = self.expense_listbox.get(selected_index)
+            category, expense = self.parse_expense_details()
+            self.total_expenses -= expense
+            self.total_label.config(text="Total Expenses: RM {:.2f}".format(self.total_expenses))
             self.expense_listbox.delete(selected_index)
 
-
-class WeeklyMonthlyExpenses(DailyExpenseTracker):
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Weekly and Monthly Expenses")
-
-        self.view_weekly_button = tk.Button(master, text="View Weekly Expenses", command=self.view_weekly_expenses)
-        self.view_weekly_button.pack()
-
-        self.view_monthly_button = tk.Button(master, text="View Monthly Expenses", command=self.view_monthly_expenses)
-        self.view_monthly_button.pack()
-
-        self.expense_summary_frame = tk.Frame(master, bg="#800080")
-        self.expense_summary_frame.pack(fill=tk.BOTH, expand=True)
-
-        self.expense_summary_label = tk.Label(self.expense_summary_frame, text="Weekly/Monthly Expenses:", bg="#800080",
-                                              fg="#FFFFFF")
-        self.expense_summary_label.pack()
-
-        self.expense_summary_listbox = tk.Listbox(self.expense_summary_frame, width=50)
-        self.expense_summary_listbox.pack()
+    def parse_expense_details(self):
+        category = self.split('(')[-1].split(')')[0].strip()
+        expense = float(self.split('RM')[-1].split()[0])
+        return category, expense
 
     def view_weekly_expenses(self):
         expenses_by_category = self.get_expenses_in_period(7)
@@ -171,11 +170,6 @@ class WeeklyMonthlyExpenses(DailyExpenseTracker):
     def view_monthly_expenses(self):
         expenses_by_category = self.get_expenses_in_period(30)
         self.update_expense_summary_listbox(expenses_by_category)
-
-    def parse_expense_details(self, details):
-        category = details.split('(')[-1].split(')')[0].strip()
-        expense = float(details.split('RM')[-1].split()[0])
-        return category, expense
 
     def get_expenses_in_period(self, days):
         expenses_by_category = {}
@@ -187,20 +181,26 @@ class WeeklyMonthlyExpenses(DailyExpenseTracker):
             expense_date = datetime.strptime(date_str, '%d/%m/%Y')
 
             if start_date <= expense_date <= end_date:
-                category, expense = self.parse_expense_details(details)
+                category, expense = self.parse_expense_details()
                 expenses_by_category[category] = expenses_by_category.get(category, 0) + expense
 
         return expenses_by_category
 
     def update_expense_summary_listbox(self, expenses_by_category):
-        self.expense_summary_listbox.delete(0, tk.END)
+        summary_listbox = tk.Listbox(self.master, width=50)
+        summary_listbox.pack()
         for category, amount in expenses_by_category.items():
-            self.expense_summary_listbox.insert(tk.END, f"{category}: RM{amount:.2f}")
+            summary_listbox.insert(tk.END, f"{category}: RM{amount:.2f}")
+
+    def split(self, param):
+        pass
+
 
 def main():
     root = tk.Tk()
     app = DailyExpenseTracker(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()
