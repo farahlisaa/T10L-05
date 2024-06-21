@@ -2,8 +2,24 @@ from tkinter import *
 from tkinter import messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
-import json
-import os
+import sqlite3
+
+#database
+def create_database():
+    connect = sqlite3.connect('user_data.db')
+    c = connect.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNQIE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL
+              )
+        ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS savings (
+              id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, month TEXT NOT NULL, category TEXT NOT NULL, amount REAL NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id)
+              )
+        ''')
+    connect.commit()
+    connect.close()
 
 class MonthlySavingsTracker:
     #window setting
@@ -12,6 +28,9 @@ class MonthlySavingsTracker:
         self.root.title("Monthly Savings Tracker")
         self.root.state('zoomed')
         self.root.config(bg = '#FFC0CB')
+
+        self.create_db_connection()
+        self.load_data()
 
     #categories options
         self.categories = ["Food", "Transportation", "Utilities", "Groceries", "Other"]
@@ -56,6 +75,10 @@ class MonthlySavingsTracker:
         self.chart_frame = Frame(root, bg = 'white')
         self.chart_frame.pack()
 
+    def create_db_connection(self):
+        self.conn = sqlite3.connect('user_data.db')
+        self.cursor = self.conn.cursor()
+
     #month options command
     def month_options(self):
         return["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
@@ -69,9 +92,8 @@ class MonthlySavingsTracker:
         if amount:
             try:
                 amount = float(amount)
-                if month not in self.savings:
-                    self.savings[month] = {category: 0 for category in self.categories}
-                self.savings[month][category] += amount
+                self.cursor.execute("INSERT INTO savings (month, category, amount) VALUES (?, ?, ?)", (month, category, amount))
+                self.conn.commit()
                 messagebox.showinfo("Success", "Savings added successfully!")
                 self.amount_entry.delete(0, END)
                 self.save_data()
@@ -80,6 +102,16 @@ class MonthlySavingsTracker:
                 messagebox.showerror("Error", "Please enter a valid number")
         else:
             messagebox.showerror("Error", "Please enter an amount")
+
+    def load_data(self):
+        self.savings = {}
+        self.cursor.execute("SELECT month, category, amount FROM savings")
+        rows = self.cursor.fetchall()
+        for row in rows:
+            month, category, amount = row
+            if month not in self.savings:
+                self.savings[month] = {cat: 0 for cat in self.categories}
+            self.savings[month][category] += amount
 
     #show chart command
     def show_chart(self):
@@ -120,15 +152,10 @@ class MonthlySavingsTracker:
         previous_index = (current_index - 1) % len(month_list)
         return month_list[previous_index]
     
-    #save data
-    def save_data(self):
-        with open('savings_data.json', 'w') as file:
-            json.dump(self.savings, file)
-    #load data
-    def load_data(self):
-        if os.path.exists('savings_data.json'):
-            with open('savings_data.json', 'r') as file:
-                self.savings = json.load(file)
+    def __del__(self):
+        self.conn.close()
+
+create_database()
 
 #window looping
 if __name__ == '__main__':
