@@ -71,7 +71,7 @@ class DailyExpenseTracker:
                           category TEXT)''')
 
         self.c.execute('''INSERT INTO new_expenses (expensesid, date, expense, category)
-                          SELECT id, date, expense, category FROM expenses''')
+                          SELECT expensesid, date, expense, category FROM expenses''')
 
         self.c.execute('DROP TABLE IF EXISTS expenses')
 
