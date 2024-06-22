@@ -1,9 +1,11 @@
 import tkinter as tk
+from logging import root
 from tkinter import messagebox
 from tkcalendar import Calendar
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import sqlite3
+import calendar
 
 class DailyExpenseTracker:
     def __init__(self, master):
@@ -71,8 +73,7 @@ class DailyExpenseTracker:
         self.weekly_expenses_text = tk.Text(master, height=10, width=50)
         self.weekly_expenses_text.pack()
 
-
-        self.monthly_expenses_button = tk.Button(master,text="Calculate Monthly Expenses", command=self.calculate_monthly_expenses)
+        self.monthly_expenses_button = tk.Button(master, text="Calculate Monthly Expenses", command=self.calculate_monthly_expenses)
         self.monthly_expenses_button.pack()
 
         self.monthly_total_label = tk.Label(master, text="Monthly Expenses by Category:", bg="#800080", fg="#FFFFFF")
@@ -81,22 +82,13 @@ class DailyExpenseTracker:
         self.monthly_expenses_text = tk.Text(master, height=10, width=50)
         self.monthly_expenses_text.pack()
 
-
     def update_table_schema(self):
-        self.c.execute('''CREATE TABLE IF NOT EXISTS new_expenses
+        self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
                           (expensesid INTEGER PRIMARY KEY,
                           userid REAL,
                           date TEXT,
                           expense REAL,
                           category TEXT)''')
-
-        self.c.execute('''INSERT INTO new_expenses (expensesid, date, expense, category)
-                          SELECT expensesid, date, expense, category FROM expenses''')
-
-        self.c.execute('DROP TABLE IF EXISTS expenses')
-
-        self.c.execute('ALTER TABLE new_expenses RENAME TO expenses')
-
         self.connect.commit()
 
     def select_date(self):
@@ -123,8 +115,13 @@ class DailyExpenseTracker:
             self.expense_entry.delete(0, tk.END)
             expense_date = self.date_var.get()
             expense_category = self.category_var.get()
-            self.expense_listbox.insert(tk.END, f"{expense_date}: RM{expense} ({expense_category})")
+            self.expense_listbox.insert(tk.END, f"{expense_date}: RM{expense:.2f} ({expense_category})")
             self.insert_expense(expense_date, expense, expense_category)
+
+            # After adding expense, recalculate weekly expenses
+            self.calculate_weekly_expenses()
+            self.calculate_monthly_expenses()
+
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid expense amount.")
 
@@ -159,8 +156,8 @@ class DailyExpenseTracker:
 
     def calculate_weekly_expenses(self):
         today = datetime.today()
-        start_of_week = today - timedelta(days=today.weekday() + 1)  # Start of the week is Sunday
-        end_of_week = start_of_week + timedelta(days=6)  # End of the week is Saturday
+        start_of_week = today - timedelta(days=today.weekday())  # Start of the week is Monday
+        end_of_week = start_of_week + timedelta(days=6)  # End of the week is Sunday
 
         self.c.execute("""
             SELECT category, SUM(expense) 
@@ -181,17 +178,21 @@ class DailyExpenseTracker:
             self.weekly_expenses_text.insert(tk.END, "No expenses recorded for this week.")
 
     def calculate_monthly_expenses(self):
-        today = datetime.today()
-        start_of_month = today.replace(day=1)
-        next_month = start_of_month.replace(month=start_of_month.month % 12 + 1, day=1)
-        end_of_month = next_month - timedelta(days=1)
+        # Get user input date
+        input_date_str = self.date_var.get()
+        input_date = datetime.strptime(input_date_str, '%d/%m/%Y')
 
+        # Determine start and end of the month based on the input date
+        start_of_month = input_date.replace(day=1)
+        end_of_month = start_of_month.replace(day=calendar.monthrange(start_of_month.year, start_of_month.month)[1])
+
+        # Query for expenses only if they fall within the same month as the input date
         self.c.execute("""
-        SELECT category, SUM(expense) 
-        FROM expenses 
-        WHERE date BETWEEN ? AND ? 
-        GROUP BY category
-    """, (start_of_month.strftime('%d/%m/%Y'), end_of_month.strftime('%d/%m/%Y')))                   
+            SELECT category, SUM(expense) 
+            FROM expenses 
+            WHERE date BETWEEN ? AND ?
+            GROUP BY category
+        """, (start_of_month.strftime('%d/%m/%Y'), end_of_month.strftime('%d/%m/%Y')))
         monthly_expenses = self.c.fetchall()
 
         total_monthly_expenses = sum(total for _, total in monthly_expenses)
@@ -204,7 +205,11 @@ class DailyExpenseTracker:
         else:
             self.monthly_expenses_text.insert(tk.END, "No expenses recorded for this month.")
 
-    
+    def delete_expense(self):
+        selected_index = self.expense_listbox.curselection()
+        if selected_index:
+            self.expense_listbox.delete(selected_index)
+
 def main():
     root = tk.Tk()
     app = DailyExpenseTracker(root)
@@ -212,3 +217,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
