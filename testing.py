@@ -175,10 +175,13 @@ class DailyExpenseTracker:
         rows = self.c.fetchall()
 
         for row in rows:
-            expense_date = datetime.strptime(row[0], '%d/%m/%Y')
-            if start_date <= expense_date <= end_date:
-                category, expense = row[2], row[1]
-                expenses_by_category[category] = expenses_by_category.get(category, 0) + expense
+            try:
+                expense_date = datetime.strptime(row[0], '%d/%m/%Y')
+                if start_date <= expense_date <= end_date:
+                    category, expense = row[2], row[1]
+                    expenses_by_category[category] = expenses_by_category.get(category, 0) + expense
+            except ValueError:
+                continue
 
         return expenses_by_category
 
