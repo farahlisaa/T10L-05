@@ -1,32 +1,11 @@
-[Notification1]
+[Login Reminder]
 app_id=Blossom Budget
-title=Bill reminders!!
-msg=Your bill is overdue, please make a payment asap
+title=Login reminder!!
+msg=You haven't put in any expenses today! Any updates?
 duration=short
-time=22-06-2024 15:13:00
+time=13:00:00
+icon=C:\CSP1123\GITProject\appcover.jpg
 audio=LoopingCall
 loop=False
 label=Click Me!
 launch=https://ebwise.mmu.edu.my/my/courses.php
-
-[Notification2]
-app_id=Blossom Budget
-title=Bill reminders!!
-msg=Electricity bill is due tomorrow
-duration=short
-time=28=05-2024 11:35:00
-audio=LoopingCall
-loop=False
-label=Click Me!
-launch=https://www.mytnb.com.my/
-
-[Notification3]
-app_id=Blossom Budget
-title=Debt payment
-msg=Housing debt is due in 3 days
-duration=short
-time=31-05-2024 14:00:00
-audio=LoopingCall
-loop=False
-label=Click Me!
-launch=https://ebwise.mmu.edu.my/course/view.php?id=4986
