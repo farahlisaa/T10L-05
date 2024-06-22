@@ -1,10 +1,12 @@
 import tkinter as tk
 from tkinter import messagebox
 from tkcalendar import Calendar
-from datetime import datetime
+from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import sqlite3
-from notification import NotificationHandler
+import threading
+import time
+from notification import check_and_notify
 
 class DailyExpenseTracker:
     def __init__(self, master):
@@ -63,10 +65,12 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
-        # Create notification handler instance
-        self.notification_handler = NotificationHandler(self)
-
         self.initialize()
+
+        # Start a background thread to check for notifications
+        self.notification_thread = threading.Thread(target=self.check_notifications)
+        self.notification_thread.daemon = True
+        self.notification_thread.start()
 
     def initialize(self):
         self.weekly_expenses_button = tk.Button(self.master, text="Calculate Weekly Expenses", command=self.calculate_weekly_expenses)
@@ -127,9 +131,6 @@ class DailyExpenseTracker:
             self.calculate_weekly_expenses()
             self.calculate_monthly_expenses()
 
-            # Check if notifications should be shown
-            self.notification_handler.show_notification_if_no_expenses()
-
         except ValueError:
             messagebox.showerror("Error", "Please enter a valid expense amount.")
 
@@ -169,8 +170,7 @@ class DailyExpenseTracker:
 
         self.c.execute("""
             SELECT category, SUM(expense) 
-            FROM expenses 
-            WHERE date BETWEEN ? AND ? 
+            FROM expenses WHERE date BETWEEN ? AND ? 
             GROUP BY category
         """, (start_of_week.strftime('%d/%m/%Y'), end_of_week.strftime('%d/%m/%Y')))
         weekly_expenses = self.c.fetchall()
@@ -186,15 +186,12 @@ class DailyExpenseTracker:
             self.weekly_expenses_text.insert(tk.END, "No expenses recorded for this week.")
 
     def calculate_monthly_expenses(self):
-        # Get user input date
         input_date_str = self.date_var.get()
         input_date = datetime.strptime(input_date_str, '%d/%m/%Y')
 
-        # Determine start and end of the month based on the input date
         start_of_month = input_date.replace(day=1)
-        end_of_month = start_of_month.replace(day=calendar.monthrange(start_of_month.year, start_of_month.month)[1])
+        end_of_month = (start_of_month + timedelta(days=32)).replace(day=1) - timedelta(days=1)
 
-        # Query for expenses only if they fall within the same month as the input date
         self.c.execute("""
             SELECT category, SUM(expense) 
             FROM expenses 
@@ -218,6 +215,15 @@ class DailyExpenseTracker:
         if selected_index:
             self.expense_listbox.delete(selected_index)
 
+    def check_notifications(self):
+        while True:
+            now = datetime.now()
+            target_time = datetime.combine(now.date(), datetime.strptime("00:17:00", "%H:%M:%S").time())
+            if now >= target_time:
+                check_and_notify('expenses.db', 'notification.txt')
+                break
+            time.sleep(60)  # Check every minute
+
 def main():
     root = tk.Tk()
     app = DailyExpenseTracker(root)
@@ -225,6 +231,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
 
 
 
