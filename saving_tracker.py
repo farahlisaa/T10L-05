@@ -10,7 +10,7 @@ def create_database():
     c = connect.cursor()
     c.execute('''
         CREATE TABLE IF NOT EXISTS users (
-              id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNQIE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL
+              id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL
               )
         ''')
     c.execute('''
@@ -30,12 +30,10 @@ class MonthlySavingsTracker:
         self.root.config(bg = '#FFC0CB')
 
         self.create_db_connection()
-        self.load_data()
 
     #categories options
         self.categories = ["Food", "Transportation", "Utilities", "Groceries", "Other"]
         self.savings = {}
-
         self.load_data()
 
         self.input_frame = Frame(root, bg = '#800080')
@@ -65,6 +63,10 @@ class MonthlySavingsTracker:
         self.month_menu = OptionMenu(self.input_frame, self.month_var, *self.month_options())
         self.month_menu.grid(row = 2, column = 1, padx = 10, pady = 10)
 
+    #go to expenses page button
+        self.expenses_button = Button(root, text = "Go to expenses page >>>", font = ('Helvetica', 10), cursor = 'hand2', bd = 3, command = self.expenses_page)
+        self.expenses_button.place(x = 1000, y = 30)
+
     #add button
         self.add_button = Button(self.input_frame, text = "Add Savings", font = ('Helvetica', 10), command = self.add_savings, cursor = 'hand2')
         self.add_button.grid(row = 3, column = 1, rowspan = 3, padx = 10, pady = 10)
@@ -78,6 +80,10 @@ class MonthlySavingsTracker:
     def create_db_connection(self):
         self.conn = sqlite3.connect('user_data.db')
         self.cursor = self.conn.cursor()
+    
+    def expenses_page(self):
+        self.root.destroy()
+        import testing
 
     #month options command
     def month_options(self):
@@ -92,11 +98,12 @@ class MonthlySavingsTracker:
         if amount:
             try:
                 amount = float(amount)
-                self.cursor.execute("INSERT INTO savings (month, category, amount) VALUES (?, ?, ?)", (month, category, amount))
+                user_id = 1
+                self.cursor.execute("INSERT INTO savings (user_id, month, category, amount) VALUES (?, ?, ?, ?)", (user_id, month, category, amount))
                 self.conn.commit()
                 messagebox.showinfo("Success", "Savings added successfully!")
                 self.amount_entry.delete(0, END)
-                self.save_data()
+                self.load_data()
                 self.show_chart()
             except ValueError:
                 messagebox.showerror("Error", "Please enter a valid number")
