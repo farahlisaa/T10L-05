@@ -1,31 +1,31 @@
 [Notification1]
-app_id=FinanceBook
+app_id=Blossom Budget
 title=Bill reminders!!
 msg=Your bill is overdue, please make a payment asap
 duration=short
-time=2024-05-28 10:13:00
+time=22-06-2024 15:13:00
 audio=LoopingCall
 loop=False
 label=Click Me!
 launch=https://ebwise.mmu.edu.my/my/courses.php
 
 [Notification2]
-app_id=FinanceBook
+app_id=Blossom Budget
 title=Bill reminders!!
 msg=Electricity bill is due tomorrow
 duration=short
-time=2024-05-28 10:14:00
+time=28=05-2024 11:35:00
 audio=LoopingCall
 loop=False
 label=Click Me!
 launch=https://www.mytnb.com.my/
 
 [Notification3]
-app_id=FinanceBook
+app_id=Blossom Budget
 title=Debt payment
 msg=Housing debt is due in 3 days
 duration=short
-time=2024-05-31 14:00:00
+time=31-05-2024 14:00:00
 audio=LoopingCall
 loop=False
 label=Click Me!
