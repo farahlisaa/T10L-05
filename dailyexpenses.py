@@ -5,6 +5,22 @@ from datetime import datetime
 import matplotlib.pyplot as plt
 import sqlite3
 
+def create_database():
+    connect = sqlite3.connect('user_data.db')
+    c = connect.cursor()
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS users (
+              id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE NOT NULL, username TEXT UNIQUE NOT NULL, password TEXT NOT NULL
+              )
+        ''')
+    c.execute('''
+        CREATE TABLE IF NOT EXISTS savings (
+              id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, date TEXT NOT NULL, expense REAL NOT NULL, category TEXT NOT NULL, FOREIGN KEY(user_id) REFERENCES users(id)
+              )
+        ''')
+    connect.commit()
+    connect.close()
+
 class DailyExpenseTracker:
     def __init__(self, master):
         self.master = master
