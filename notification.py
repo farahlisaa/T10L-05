@@ -1,243 +1,89 @@
-import tkinter as tk
-from tkinter import messagebox
-from tkcalendar import Calendar
+import time
 from datetime import datetime, timedelta
-import matplotlib.pyplot as plt
-import sqlite3
-import calendar
-import threading
 from winotify import Notification, audio
 
 
-class DailyExpenseTracker:
-    def __init__(self, master):
-        self.master = master
-        self.master.title("Daily Expenses Tracker")
-        self.master.config(bg="#800080")
+def parse_notification_file(filename):
+    notifications = {}
+    current_notification = None
 
-        self.connect = sqlite3.connect('expenses.db')
-        self.c = self.connect.cursor()
-        self.update_table_schema()
+    with open(filename, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            line = line.strip()
+            if line.startswith('[') and line.endswith(']'):
+                current_notification = line[1:-1]
+                notifications[current_notification] = {}
+            elif '=' in line and current_notification:
+                key, value = line.split('=', 1)
+                notifications[current_notification][key] = value
 
-        self.date_label = tk.Label(master, text="Date:", bg="#800080", fg="#FFFFFF")
-        self.date_label.pack()
+    return notifications
 
-        self.date_var = tk.StringVar(master, value=datetime.today().strftime('%d/%m/%Y'))
-        self.date_entry = tk.Entry(master, textvariable=self.date_var)
-        self.date_entry.pack()
 
-        self.date_button = tk.Button(master, text="Choose Date", command=self.select_date)
-        self.date_button.pack()
+def calculate_delay(target_time_str):
+    target_time = datetime.strptime(target_time_str, "%H:%M:%S").time()
+    current_time = datetime.now().time()
 
-        self.categories = ["Food", "Transportation", "Utilities", "Groceries", "Other"]
+    # Debug statements to check current time and target time
+    print(f"Current time: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
+    print(f"Target time: {target_time.strftime('%H:%M:%S')}")
 
-        self.expense_label = tk.Label(master, text="Enter Expense (RM):", bg="#800080", fg="#FFFFFF")
-        self.expense_label.pack()
+    # Calculate target datetime for today
+    target_datetime = datetime.combine(datetime.today(), target_time)
 
-        self.expense_entry = tk.Entry(master)
-        self.expense_entry.pack()
+    # Check if the target time is exactly the current time
+    if target_time.hour == current_time.hour and target_time.minute == current_time.minute:
+        delay = 0
+    else:
+        # Calculate delay in seconds
+        delay = (target_datetime - datetime.now()).total_seconds()
 
-        self.category_label = tk.Label(master, text="Select Category:", bg="#800080", fg="#FFFFFF")
-        self.category_label.pack()
-
-        self.category_var = tk.StringVar(master)
-        self.category_var.set(self.categories[0])
-
-        self.category_menu = tk.OptionMenu(master, self.category_var, *self.categories)
-        self.category_menu.config(bg="#FFC0CB")
-        self.category_menu.pack()
-
-        self.add_expense_button = tk.Button(master, text="Add Expense", command=self.add_expense)
-        self.add_expense_button.pack()
-
-        self.view_mode = "list"
-
-        self.toggle_view_button = tk.Button(master, text="View as Pie Chart", command=self.toggle_view)
-        self.toggle_view_button.pack()
-
-        self.expense_list_label = tk.Label(master, text="Expenses:", bg="#800080", fg="#FFFFFF")
-        self.expense_list_label.pack()
-
-        self.expense_listbox = tk.Listbox(master, width=50)
-        self.expense_listbox.pack()
-
-        self.total_label = tk.Label(master, text="Total Expenses: RM0.00", bg="#800080", fg="#FFFFFF")
-        self.total_label.pack()
-
-        self.total_expenses = 0.0
-
-        self.weekly_expenses_button = tk.Button(master, text="Calculate Weekly Expenses",
-                                                command=self.calculate_weekly_expenses)
-        self.weekly_expenses_button.pack()
-
-        self.weekly_total_label = tk.Label(master, text="Weekly Expenses by Category:", bg="#800080", fg="#FFFFFF")
-        self.weekly_total_label.pack()
-
-        self.weekly_expenses_text = tk.Text(master, height=10, width=50)
-        self.weekly_expenses_text.pack()
-
-        self.monthly_expenses_button = tk.Button(master, text="Calculate Monthly Expenses",
-                                                 command=self.calculate_monthly_expenses)
-        self.monthly_expenses_button.pack()
-
-        self.monthly_total_label = tk.Label(master, text="Monthly Expenses by Category:", bg="#800080", fg="#FFFFFF")
-        self.monthly_total_label.pack()
-
-        self.monthly_expenses_text = tk.Text(master, height=10, width=50)
-        self.monthly_expenses_text.pack()
-
-        # Schedule the notification check
-        self.schedule_notification_check()
-
-    def update_table_schema(self):
-        self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
-                          (expensesid INTEGER PRIMARY KEY,
-                          userid REAL,
-                          date TEXT,
-                          expense REAL,
-                          category TEXT)''')
-        self.connect.commit()
-
-    def select_date(self):
-        top = tk.Toplevel(self.master)
-        cal = Calendar(top, selectmode="day", date_pattern='dd/MM/yyyy')
-        cal.pack()
-
-        def set_date():
-            self.date_var.set(cal.get_date())
-            top.destroy()
-
-        select_button = tk.Button(top, text="Select", command=set_date)
-        select_button.pack()
-
-    def insert_expense(self, expense_date, expense, expense_category):
-        userid = 1
-        self.c.execute("INSERT INTO expenses (userid, date, expense, category) VALUES (?, ?, ?, ?)",
-                       (userid, expense_date, expense, expense_category))
-        self.connect.commit()
-
-    def add_expense(self):
-        try:
-            expense = float(self.expense_entry.get())
-            self.total_expenses += expense
-            self.total_label.config(text="Total Expenses: RM {:.2f}".format(self.total_expenses))
-            self.expense_entry.delete(0, tk.END)
-            expense_date = self.date_var.get()
-            expense_category = self.category_var.get()
-            self.expense_listbox.insert(tk.END, f"{expense_date}: RM{expense:.2f} ({expense_category})")
-            self.insert_expense(expense_date, expense, expense_category)
-
-            # After adding expense, recalculate weekly expenses
-            self.calculate_weekly_expenses()
-            self.calculate_monthly_expenses()
-
-        except ValueError:
-            messagebox.showerror("Error", "Please enter a valid expense amount.")
-
-    def toggle_view(self):
-        if self.view_mode == "list":
-            self.view_mode = "pie"
-            self.toggle_view_button.config(text="View as List")
-            self.update_pie_chart()
-        elif self.view_mode == "pie":
-            self.view_mode = "list"
-            self.toggle_view_button.config(text="View as Pie Chart")
-            plt.close()
-
-    def update_pie_chart(self):
-        expenses_by_category = {}
-        for item in self.expense_listbox.get(0, tk.END):
-            category = item.split('(')[-1].split(')')[0].strip()
-            expense = float(item.split('RM')[-1].split()[0])
-            if category in expenses_by_category:
-                expenses_by_category[category] += expense
+        # If the target time is in the past, but within the same hour, set delay to 0
+        if delay < 0 and target_datetime.date() == datetime.now().date():
+            target_time = datetime.combine(datetime.today(), target_time)
+            if target_time > datetime.now():
+                delay = (target_time - datetime.now()).total_seconds()
             else:
-                expenses_by_category[category] = expense
+                delay = -1
 
-        categories = list(expenses_by_category.keys())
-        expenses = list(expenses_by_category.values())
+    return delay
 
-        plt.figure(figsize=(5, 4))
-        plt.pie(expenses, labels=categories, autopct='%1.1f%%')
-        plt.title('Expenses by Category')
-        plt.axis('equal')
-        plt.show()
 
-    def calculate_weekly_expenses(self):
-        today = datetime.today()
-        start_of_week = today - timedelta(days=today.weekday())  # Start of the week is Monday
-        end_of_week = start_of_week + timedelta(days=6)  # End of the week is Sunday
+def show_notification(notification_data):
+    toast = Notification(
+        app_id=notification_data.get('app_id', 'DefaultAppID'),
+        title=notification_data.get('title', 'Default Title'),
+        msg=notification_data.get('msg', 'Default Message'),
+        duration=notification_data.get('duration', 'short'),
+        icon=notification_data.get('icon')
+    )
 
-        self.c.execute("""
-            SELECT category, SUM(expense) 
-            FROM expenses 
-            WHERE date BETWEEN ? AND ? 
-            GROUP BY category
-        """, (start_of_week.strftime('%d/%m/%Y'), end_of_week.strftime('%d/%m/%Y')))
-        weekly_expenses = self.c.fetchall()
+    if 'audio' in notification_data:
+        toast.set_audio(getattr(audio, notification_data['audio']),
+                        loop=notification_data.get('loop', 'False').lower() == 'true')
 
-        total_weekly_expenses = sum(total for _, total in weekly_expenses)
+    if 'label' in notification_data and 'launch' in notification_data:
+        toast.add_actions(label=notification_data['label'], launch=notification_data['launch'])
 
-        self.weekly_expenses_text.delete(1.0, tk.END)
-        if weekly_expenses:
-            for category, total in weekly_expenses:
-                self.weekly_expenses_text.insert(tk.END, f"{category}: RM{total:.2f}\n")
-            self.weekly_expenses_text.insert(tk.END, f"\nTotal Weekly Expenses: RM{total_weekly_expenses:.2f}")
+    toast.show()
+
+
+notifications_data = parse_notification_file('notification.txt')
+
+for notification_name, notification_data in notifications_data.items():
+    target_time_str = notification_data.get("time")
+    if target_time_str:
+        delay = calculate_delay(target_time_str)
+        if delay >= 0:
+            print(f"Waiting for {delay} seconds to show notification: {notification_name}")
+            time.sleep(delay)
+            show_notification(notification_data)
         else:
-            self.weekly_expenses_text.insert(tk.END, "No expenses recorded for this week.")
+            print(f"Error: Target time for notification '{notification_name}' has already passed for today")
+    else:
+        print(f"Error: 'time' key not found for notification '{notification_name}'")
 
-    def calculate_monthly_expenses(self):
-        # Get user input date
-        input_date_str = self.date_var.get()
-        input_date = datetime.strptime(input_date_str, '%d/%m/%Y')
+print(notifications_data)
 
-        # Determine start and end of the month based on the input date
-        start_of_month = input_date.replace(day=1)
-        end_of_month = start_of_month.replace(day=calendar.monthrange(start_of_month.year, start_of_month.month)[1])
-
-        # Query for expenses only if they fall within the same month as the input date
-        self.c.execute("""
-            SELECT category, SUM(expense) 
-            FROM expenses 
-            WHERE date BETWEEN ? AND ?
-            GROUP BY category
-        """, (start_of_month.strftime('%d/%m/%Y'), end_of_month.strftime('%d/%m/%Y')))
-        monthly_expenses = self.c.fetchall()
-
-        total_monthly_expenses = sum(total for _, total in monthly_expenses)
-
-        self.monthly_expenses_text.delete(1.0, tk.END)
-        if monthly_expenses:
-            for category, total in monthly_expenses:
-                self.monthly_expenses_text.insert(tk.END, f"{category}: RM{total:.2f}\n")
-            self.monthly_expenses_text.insert(tk.END, f"\nTotal Monthly Expenses: RM{total_monthly_expenses:.2f}")
-        else:
-            self.monthly_expenses_text.insert(tk.END, "No expenses recorded for this month.")
-
-    def schedule_notification_check(self):
-        now = datetime.now()
-        target_time = datetime.combine(now.date(), datetime.strptime("12:30:00", "%H:%M:%S").time())
-        if now > target_time:
-            target_time += timedelta(days=1)
-        delay = (target_time - now).total_seconds()
-        threading.Timer(delay, self.check_expenses_and_notify).start()
-
-    def check_expenses_and_notify(self):
-        today_date_str = datetime.today().strftime('%d/%m/%Y')
-        self.c.execute("SELECT COUNT(*) FROM expenses WHERE date = ?", (today_date_str,))
-        count = self.c.fetchone()[0]
-        if count == 0:
-            toast = Notification(app_id="Expense Tracker", title="No Expenses Recorded",
-                                 msg="You have not recorded any expenses today.", icon="path/to/icon.ico")
-            toast.set_audio(audio.Default, loop=False)
-            toast.show()
-
-        # Schedule the next day's check
-        self.schedule_notification_check()
-
-
-if __name__ == "__main__":
-    root = tk.Tk()
-    app = DailyExpenseTracker(root)
-    root.mainloop()
 
