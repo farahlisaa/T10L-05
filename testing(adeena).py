@@ -1,4 +1,5 @@
 import tkinter as tk
+from logging import root
 from tkinter import messagebox
 from tkcalendar import Calendar
 from datetime import datetime, timedelta
@@ -63,11 +64,17 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
+        self.weekly_expenses_button = tk.Button(master, text="Calculate Weekly Expenses", command=self.calculate_weekly_expenses)
+        self.weekly_expenses_button.pack()
+
         self.weekly_total_label = tk.Label(master, text="Weekly Expenses by Category:", bg="#800080", fg="#FFFFFF")
         self.weekly_total_label.pack()
 
         self.weekly_expenses_text = tk.Text(master, height=10, width=50)
         self.weekly_expenses_text.pack()
+
+        self.monthly_expenses_button = tk.Button(master, text="Calculate Monthly Expenses", command=self.calculate_monthly_expenses)
+        self.monthly_expenses_button.pack()
 
         self.monthly_total_label = tk.Label(master, text="Monthly Expenses by Category:", bg="#800080", fg="#FFFFFF")
         self.monthly_total_label.pack()
@@ -210,7 +217,5 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
 
 

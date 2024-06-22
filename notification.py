@@ -5,6 +5,10 @@ from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import sqlite3
 import calendar
+import threading
+import time
+from winotify import Notification, audio
+
 
 class DailyExpenseTracker:
     def __init__(self, master):
@@ -63,17 +67,28 @@ class DailyExpenseTracker:
 
         self.total_expenses = 0.0
 
+        self.weekly_expenses_button = tk.Button(master, text="Calculate Weekly Expenses",
+                                                command=self.calculate_weekly_expenses)
+        self.weekly_expenses_button.pack()
+
         self.weekly_total_label = tk.Label(master, text="Weekly Expenses by Category:", bg="#800080", fg="#FFFFFF")
         self.weekly_total_label.pack()
 
         self.weekly_expenses_text = tk.Text(master, height=10, width=50)
         self.weekly_expenses_text.pack()
 
+        self.monthly_expenses_button = tk.Button(master, text="Calculate Monthly Expenses",
+                                                 command=self.calculate_monthly_expenses)
+        self.monthly_expenses_button.pack()
+
         self.monthly_total_label = tk.Label(master, text="Monthly Expenses by Category:", bg="#800080", fg="#FFFFFF")
         self.monthly_total_label.pack()
 
         self.monthly_expenses_text = tk.Text(master, height=10, width=50)
         self.monthly_expenses_text.pack()
+
+        # Schedule the notification check
+        self.schedule_notification_check()
 
     def update_table_schema(self):
         self.c.execute('''CREATE TABLE IF NOT EXISTS expenses
@@ -88,9 +103,11 @@ class DailyExpenseTracker:
         top = tk.Toplevel(self.master)
         cal = Calendar(top, selectmode="day", date_pattern='dd/MM/yyyy')
         cal.pack()
+
         def set_date():
             self.date_var.set(cal.get_date())
             top.destroy()
+
         select_button = tk.Button(top, text="Select", command=set_date)
         select_button.pack()
 
@@ -141,7 +158,7 @@ class DailyExpenseTracker:
         categories = list(expenses_by_category.keys())
         expenses = list(expenses_by_category.values())
 
-        plt.figure(figsize=(5,4))
+        plt.figure(figsize=(5, 4))
         plt.pie(expenses, labels=categories, autopct='%1.1f%%')
         plt.title('Expenses by Category')
         plt.axis('equal')
@@ -198,19 +215,30 @@ class DailyExpenseTracker:
         else:
             self.monthly_expenses_text.insert(tk.END, "No expenses recorded for this month.")
 
-    def delete_expense(self):
-        selected_index = self.expense_listbox.curselection()
-        if selected_index:
-            self.expense_listbox.delete(selected_index)
+    def schedule_notification_check(self):
+        now = datetime.now()
+        target_time = datetime.combine(now.date(), datetime.strptime("12:30:00", "%H:%M:%S").time())
+        if now > target_time:
+            target_time += timedelta(days=1)
+        delay = (target_time - now).total_seconds()
+        threading.Timer(delay, self.check_expenses_and_notify).start()
 
-def main():
+    def check_expenses_and_notify(self):
+        today_date_str = datetime.today().strftime('%d/%m/%Y')
+        self.c.execute("SELECT COUNT(*) FROM expenses WHERE date = ?", (today_date_str,))
+        count = self.c.fetchone()[0]
+        if count == 0:
+            toast = Notification(app_id="Expense Tracker", title="No Expenses Recorded",
+                                 msg="You have not recorded any expenses today.", icon="path/to/icon.ico")
+            toast.set_audio(audio.Default, loop=False)
+            toast.show()
+
+        # Schedule the next day's check
+        self.schedule_notification_check()
+
+
+if __name__ == "__main__":
     root = tk.Tk()
     app = DailyExpenseTracker(root)
     root.mainloop()
-
-if __name__ == "__main__":
-    main()
-
-
-
 
