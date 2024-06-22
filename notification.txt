@@ -1,0 +1,10 @@
+[Login Reminder]
+app_id=Blossom Budget
+title=Login reminder!!
+msg=You haven't put in any expenses today! Any updates?
+duration=short
+time=00:17:00
+icon=C:\CSP1123\GITProject\appcover.jpg
+audio=LoopingCall
+loop=False
+label=Click Me!
