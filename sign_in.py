@@ -7,12 +7,12 @@ def signup_page():
     window.destroy()
     import sign_up
 
-def open_savings_page():
+def open_savings_page(user_id):
     window.withdraw()
     savings_window = Tk()
     savings_window.title("Monthly Savings Tracker")
     savings_window.state('zoomed')
-    app = saving_tracker.MonthlySavingsTracker(savings_window)
+    app = saving_tracker.MonthlySavingsTracker(savings_window, user_id)
     savings_window.mainloop()
 
 #window setting
@@ -47,7 +47,7 @@ def sign_in():
 
         if user:
             messagebox.showinfo("Success", "Login successful!")
-            open_savings_page()
+            open_savings_page(user[0])
         else:
             messagebox.showerror("Error", "Invalid username or password.")
             return

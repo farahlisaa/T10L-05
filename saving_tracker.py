@@ -24,8 +24,9 @@ def create_database():
 
 class MonthlySavingsTracker:
     #window setting
-    def __init__(self, root):
+    def __init__(self, root, user_id):
         self.root = root
+        self.user_id = user_id
         self.root.title("Monthly Savings Tracker")
         self.root.state('zoomed')
         self.root.config(bg = '#FFC0CB')
@@ -99,8 +100,7 @@ class MonthlySavingsTracker:
         if amount:
             try:
                 amount = float(amount)
-                user_id = 1
-                self.cursor.execute("INSERT INTO savings (user_id, month, category, amount) VALUES (?, ?, ?, ?)", (user_id, month, category, amount))
+                self.cursor.execute("INSERT INTO savings (user_id, month, category, amount) VALUES (?, ?, ?, ?)", (self.user_id, month, category, amount))
                 self.conn.commit()
                 messagebox.showinfo("Success", "Savings added successfully!")
                 self.amount_entry.delete(0, END)
@@ -113,7 +113,7 @@ class MonthlySavingsTracker:
 
     def load_data(self):
         self.savings = {}
-        self.cursor.execute("SELECT month, category, amount FROM savings")
+        self.cursor.execute("SELECT month, category, amount FROM savings WHERE user_id =?", (self.user_id,))
         rows = self.cursor.fetchall()
         for row in rows:
             month, category, amount = row
