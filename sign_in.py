@@ -1,6 +1,7 @@
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
+import testing
 
 def signup_page():
     window.destroy()
@@ -38,6 +39,8 @@ def sign_in():
 
         if user:
             messagebox.showinfo("Success", "Login successful!")
+            window.destroy()
+            testing.main()
         else:
             messagebox.showerror("Error", "Invalid username or password.")
             return
@@ -46,7 +49,7 @@ def sign_in():
     except sqlite3.Error as e:
         messagebox.showerror("Error", f"An error occurred: {e}")
 
-    window.destroy()
+
 
 #functionality part
 def user_enter(event):
