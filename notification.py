@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import sqlite3
 import calendar
 import threading
-import time
 from winotify import Notification, audio
 
 
