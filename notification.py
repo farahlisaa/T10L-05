@@ -1,5 +1,5 @@
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from winotify import Notification, audio
 
 def parse_notification_file(filename):
@@ -20,7 +20,7 @@ def parse_notification_file(filename):
     return notifications
 
 def calculate_delay(target_time_str):
-    target_time = datetime.strptime(target_time_str, "%Y-%m-%d %H:%M:%S")
+    target_time = datetime.strptime(target_time_str, "%d-%m-%Y %H:%M:%S")
     current_time = datetime.now()
     delay = (target_time - current_time).total_seconds()
     return max(delay, 0)
