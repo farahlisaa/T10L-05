@@ -1,11 +1,19 @@
 from tkinter import *
 from tkinter import messagebox
 import sqlite3
-import testing
+import saving_tracker
 
 def signup_page():
     window.destroy()
     import sign_up
+
+def open_savings_page():
+    window.withdraw()
+    savings_window = Tk()
+    savings_window.title("Monthly Savings Tracker")
+    savings_window.state('zoomed')
+    app = saving_tracker.MonthlySavingsTracker(savings_window)
+    savings_window.mainloop()
 
 #window setting
 window = Tk()
@@ -39,8 +47,7 @@ def sign_in():
 
         if user:
             messagebox.showinfo("Success", "Login successful!")
-            window.destroy()
-            testing.main()
+            open_savings_page()
         else:
             messagebox.showerror("Error", "Invalid username or password.")
             return

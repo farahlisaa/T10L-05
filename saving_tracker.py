@@ -3,6 +3,7 @@ from tkinter import messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import sqlite3
+import testing
 
 #database
 def create_database():
@@ -83,7 +84,7 @@ class MonthlySavingsTracker:
     
     def expenses_page(self):
         self.root.destroy()
-        import testing
+        testing.main()
 
     #month options command
     def month_options(self):
