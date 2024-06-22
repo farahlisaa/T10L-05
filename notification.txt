@@ -7,5 +7,3 @@ time=18:00:00
 icon=C:\CSP1123\GITProject\appcover.jpg
 audio=LoopingCall
 loop=False
-label=Click Me!
-launch=https://ebwise.mmu.edu.my/my/courses.php
