@@ -65,41 +65,45 @@ def sign_up():
 signup_window = Tk()
 signup_window.title('Sign Up Page')
 signup_window.state('zoomed')
-signup_window.configure(bg = 'white')
-signup_window.resizable(False, False)
+signup_window.configure(bg = '#FCC0CB')
 
 frame = Frame(signup_window, bg = 'white')
-frame.place(x = 800, y = 100)
+frame.grid(padx = 20, pady = 20)
 
-heading = Label(signup_window, text = 'CREATE AN ACCOUNT', font = ('Helvetica', 23, 'bold'), bg = 'white', fg = 'black')
-heading.grid(row = 0, column = 0, padx = 830, pady = 50)
+heading = Label(frame, text = 'CREATE AN ACCOUNT', font = ('Helvetica', 23, 'bold'), bg = 'white', fg = 'black')
+heading.grid(row = 0, column = 0, padx = 10, pady = 10)
+
+#logo
+logo = PhotoImage(file = 'logo.png')
+app_logo = Label(signup_window, image = logo, bd = 3, bg =  'white')
+app_logo.place(x = 500, y = 25)
 
 #email label
 emailLabel = Label(frame, text = 'Email:', font = ('Helvetica', 17), bg = 'white', fg = 'black')
-emailLabel.grid(row = 7, column = 0, sticky = 'w', padx = 25)
-emailEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = 'lightblue', fg = 'black')
+emailLabel.grid(row = 7, column = 0, sticky = 'w', padx = 25, pady = (10, 0))
+emailEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = '#800080', fg = 'white')
 emailEntry.grid(row = 8, column = 0, sticky = 'w', padx = 29)
 
 #username label
 usernameLabel = Label(frame, text = 'Username:', font = ('Helvetica', 17), bg = 'white', fg = 'black')
 usernameLabel.grid(row = 9, column = 0, sticky = 'w', padx = 25, pady = (10, 0))
-usernameEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = 'lightblue', fg = 'black')
+usernameEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = '#800080', fg = 'white')
 usernameEntry.grid(row = 10, column = 0, sticky = 'w', padx = 29)
 
 #password label
 passwordLabel = Label(frame, text = 'Password:', font = ('Helvetica', 17), bg = 'white', fg = 'black')
 passwordLabel.grid(row = 11, column = 0, sticky = 'w', padx = 25, pady = (10, 0))
-passwordEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = 'lightblue', fg = 'black')
+passwordEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = '#800080', fg = 'white')
 passwordEntry.grid(row = 12, column = 0, sticky = 'w', padx = 29)
 
 #confirm password label
 confirm_passwordLabel = Label(frame, text = 'Confirm Password:', font = ('Helvetica', 17), bg = 'white', fg = 'black')
 confirm_passwordLabel.grid(row = 13, column = 0, sticky = 'w', padx = 25, pady = (10, 0))
-confirm_passwordEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = 'lightblue', fg = 'black')
+confirm_passwordEntry = Entry(frame, width = 25, font = ('Helvetica', 17), bg = '#800080', fg = 'white')
 confirm_passwordEntry.grid(row = 14, column = 0, sticky = 'w', padx = 29)
 
 #sign up button
-signupButton = Button(frame, text = 'Sign Up', font = ('Helvetica', 20, 'bold'), bd = 0, bg = 'lightblue', fg = 'black', activebackground = 'lightblue', activeforeground = 'black',
+signupButton = Button(frame, text = 'Sign Up', font = ('Helvetica', 20, 'bold'), bd = 3, bg = '#800080', fg = 'white', activebackground = '#800080', activeforeground = 'white',
                       width = 19, cursor = 'hand2', command = sign_up)
 signupButton.grid(row = 21, column = 0, padx = 27, pady = 30)
 
@@ -107,10 +111,9 @@ signupButton.grid(row = 21, column = 0, padx = 27, pady = 30)
 account = Label(frame, text = 'Already Have An Account?', font = ('Helvetica', 11, 'bold'), fg = 'black', bg = 'white')
 account.grid(row = 22, column = 0, sticky = 'w', padx = 25, pady = 5)
 
-loginButton = Button(frame, text = 'Login', font = ('Helvetica', 11, 'bold underline'), bg = 'white', fg = 'red', bd = 0, cursor = 'hand2', activebackground = 'white', activeforeground = 'red',
+loginButton = Button(frame, text = 'Login', font = ('Helvetica', 11, 'bold underline'), bg = 'white', fg = 'red', bd = 0, cursor = 'hand2', activebackground = 'white', activeforeground = 'lightblue',
                      command = login_page)
-loginButton.place(x = 220, y = 392)
-
+loginButton.grid(row = 22, column = 1, padx = 10, pady = 10)
 
 
 signup_window.mainloop()
